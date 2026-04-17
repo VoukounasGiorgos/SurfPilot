@@ -11,6 +11,7 @@ builder.Services.AddHttpClient<MetNorwayService>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd("SurfPilot/1.0"));
 builder.Services.AddSingleton<RecommendationService>();
 builder.Services.AddHttpClient<LlmRecommendationService>();
+builder.Services.AddHttpClient<MarineService>();
 
 builder.Services.AddCors(options =>
 {

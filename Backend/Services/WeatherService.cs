@@ -11,7 +11,7 @@ public class WeatherService(HttpClient httpClient)
         {
             var date = forecastTime.Value.ToString("yyyy-MM-dd");
             var url  = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}" +
-                       $"&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=kn" +
+                       $"&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,weathercode&wind_speed_unit=kn" +
                        $"&start_date={date}&end_date={date}&timezone=auto";
 
             var res = await httpClient.GetFromJsonAsync<OpenMeteoHourlyResponse>(url);
@@ -25,18 +25,19 @@ public class WeatherService(HttpClient httpClient)
                 "Open-Meteo",
                 hourly.WindSpeed10m![idx],
                 hourly.WindGusts10m![idx],
-                hourly.WindDirection10m![idx]
+                hourly.WindDirection10m![idx],
+                hourly.Weathercode?.Count > idx ? (int?)hourly.Weathercode[idx] : null
             );
         }
         else
         {
             var url = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}" +
-                      $"&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=kn";
+                      $"&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m,weathercode&wind_speed_unit=kn";
 
             var res = await httpClient.GetFromJsonAsync<OpenMeteoCurrentResponse>(url);
             var current = res?.Current ?? throw new InvalidOperationException("Failed to fetch weather from Open-Meteo");
 
-            return new WeatherReading("Open-Meteo", current.WindSpeed10m, current.WindGusts10m, current.WindDirection10m);
+            return new WeatherReading("Open-Meteo", current.WindSpeed10m, current.WindGusts10m, current.WindDirection10m, current.Weathercode);
         }
     }
 }
@@ -52,6 +53,7 @@ internal class OpenMeteoCurrent
     [JsonPropertyName("wind_speed_10m")]    public double WindSpeed10m { get; set; }
     [JsonPropertyName("wind_gusts_10m")]    public double WindGusts10m { get; set; }
     [JsonPropertyName("wind_direction_10m")] public double WindDirection10m { get; set; }
+    [JsonPropertyName("weathercode")]       public int? Weathercode { get; set; }
 }
 
 internal class OpenMeteoHourlyResponse
@@ -66,4 +68,5 @@ internal class OpenMeteoHourly
     [JsonPropertyName("wind_speed_10m")]    public List<double>? WindSpeed10m { get; set; }
     [JsonPropertyName("wind_gusts_10m")]    public List<double>? WindGusts10m { get; set; }
     [JsonPropertyName("wind_direction_10m")] public List<double>? WindDirection10m { get; set; }
+    [JsonPropertyName("weathercode")]       public List<int>? Weathercode { get; set; }
 }

@@ -1,3 +1,3 @@
 namespace Backend.Models;
 
-public record WeatherReading(string Source, double WindSpeedKnots, double WindGustKnots, double WindDirection);
+public record WeatherReading(string Source, double WindSpeedKnots, double WindGustKnots, double WindDirection, int? WeatherCode = null);

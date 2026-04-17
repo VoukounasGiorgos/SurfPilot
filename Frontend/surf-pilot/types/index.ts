@@ -18,6 +18,10 @@ export interface WeatherData {
   windGustKnots: number;
   windDirection: number;
   sources?: WeatherSource[];
+  condition?: string;
+  conditionIcon?: string;
+  waveHeightM?: number;
+  wavePeriodS?: number;
 }
 
 export interface GearRecommendation {
