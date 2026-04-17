@@ -14,6 +14,7 @@ export default function Home() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null);
+  const [forecastTime, setForecastTime] = useState<string | undefined>(undefined);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [recommendation, setRecommendation] = useState<GearRecommendation | null>(null);
   const [aiRecommendation, setAiRecommendation] = useState<GearRecommendation | null>(null);
@@ -31,9 +32,10 @@ export default function Home() {
     }
   }, [router]);
 
-  const handleSpotSelect = async (spot: Spot) => {
+  const handleSpotSelect = async (spot: Spot, ft?: string) => {
     if (!profile) return;
     setCurrentSpot(spot);
+    setForecastTime(ft);
     setWeather(null);
     setRecommendation(null);
     setAiRecommendation(null);
@@ -41,7 +43,7 @@ export default function Home() {
     setAiError(null);
     setLoading(true);
     try {
-      const w = await fetchWeather(spot.lat, spot.lon);
+      const w = await fetchWeather(spot.lat, spot.lon, ft);
       setWeather(w);
       const r = await fetchRecommendation(profile, w);
       setRecommendation(r);
@@ -98,7 +100,7 @@ export default function Home() {
         )}
 
         {weather && currentSpot && (
-          <WeatherCard weather={weather} spotName={currentSpot.name} />
+          <WeatherCard weather={weather} spotName={currentSpot.name} forecastTime={forecastTime} />
         )}
 
         {recommendation && (

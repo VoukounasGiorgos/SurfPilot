@@ -9,11 +9,13 @@ namespace Backend.Controllers;
 public class WeatherController(WeatherService openMeteoService, MetNorwayService metNorwayService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] double lat, [FromQuery] double lon)
+    public async Task<IActionResult> Get([FromQuery] double lat, [FromQuery] double lon, [FromQuery] string? forecastTime = null)
     {
+        DateTime? dt = forecastTime != null ? DateTime.Parse(forecastTime) : null;
+
         var results = await Task.WhenAll(
-            SafeFetch(() => openMeteoService.GetWeatherAsync(lat, lon)),
-            SafeFetch(() => metNorwayService.GetWeatherAsync(lat, lon))
+            SafeFetch(() => openMeteoService.GetWeatherAsync(lat, lon, dt)),
+            SafeFetch(() => metNorwayService.GetWeatherAsync(lat, lon, dt))
         );
 
         var readings = results.Where(r => r != null).Cast<WeatherReading>().ToArray();

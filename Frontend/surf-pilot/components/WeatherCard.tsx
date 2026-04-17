@@ -3,6 +3,7 @@ import { WeatherData } from '@/types';
 interface WeatherCardProps {
   weather: WeatherData;
   spotName: string;
+  forecastTime?: string;
 }
 
 function degreesToCardinal(deg: number): string {
@@ -10,8 +11,11 @@ function degreesToCardinal(deg: number): string {
   return dirs[Math.round(deg / 22.5) % 16];
 }
 
-export default function WeatherCard({ weather, spotName }: WeatherCardProps) {
+export default function WeatherCard({ weather, spotName, forecastTime }: WeatherCardProps) {
   const sourceCount = weather.sources?.length ?? 0;
+  const timeLabel = forecastTime
+    ? new Date(forecastTime).toLocaleString('el-GR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'Τώρα';
 
   return (
     <div className="bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-6 text-white">
@@ -19,10 +23,9 @@ export default function WeatherCard({ weather, spotName }: WeatherCardProps) {
         <h2 className="text-lg font-semibold opacity-90">Wind Conditions</h2>
         <span className="text-sm opacity-75">{spotName}</span>
       </div>
-      {sourceCount > 1 && (
-        <p className="text-xs opacity-60 mb-4">Μέσος όρος {sourceCount} πηγών</p>
-      )}
-      {sourceCount <= 1 && <div className="mb-4" />}
+      <p className="text-xs opacity-60 mb-4">
+        {timeLabel}{sourceCount > 1 ? ` · Μέσος όρος ${sourceCount} πηγών` : ''}
+      </p>
 
       <div className="grid grid-cols-3 gap-4 text-center">
         <div>

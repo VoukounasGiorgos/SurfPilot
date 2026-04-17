@@ -7,18 +7,35 @@ public class MetNorwayService(HttpClient httpClient)
 {
     private const double MsToKnots = 1.94384;
 
-    public async Task<WeatherReading> GetWeatherAsync(double lat, double lon)
+    public async Task<WeatherReading> GetWeatherAsync(double lat, double lon, DateTime? forecastTime = null)
     {
         var url = $"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat}&lon={lon}";
         var response = await httpClient.GetFromJsonAsync<MetResponse>(url);
 
-        var details = response?.Properties?.Timeseries?.FirstOrDefault()?.Data?.Instant?.Details
+        var timeseries = response?.Properties?.Timeseries
             ?? throw new InvalidOperationException("Failed to fetch weather from MET Norway");
+
+        MetTimeseries? entry;
+        if (forecastTime.HasValue)
+        {
+            var target = forecastTime.Value.ToUniversalTime();
+            entry = timeseries
+                .Where(t => t.Time != null)
+                .OrderBy(t => Math.Abs((DateTime.Parse(t.Time!, null, System.Globalization.DateTimeStyles.RoundtripKind) - target).TotalMinutes))
+                .FirstOrDefault();
+        }
+        else
+        {
+            entry = timeseries.FirstOrDefault();
+        }
+
+        var details = entry?.Data?.Instant?.Details
+            ?? throw new InvalidOperationException("No matching forecast entry from MET Norway");
 
         return new WeatherReading(
             "MET Norway",
             Math.Round(details.WindSpeed * MsToKnots, 1),
-            Math.Round(details.WindGust * MsToKnots, 1),
+            Math.Round(details.WindGust  * MsToKnots, 1),
             details.WindDirection
         );
     }
@@ -38,6 +55,9 @@ internal class MetProperties
 
 internal class MetTimeseries
 {
+    [JsonPropertyName("time")]
+    public string? Time { get; set; }
+
     [JsonPropertyName("data")]
     public MetData? Data { get; set; }
 }
@@ -56,12 +76,7 @@ internal class MetInstant
 
 internal class MetDetails
 {
-    [JsonPropertyName("wind_speed")]
-    public double WindSpeed { get; set; }
-
-    [JsonPropertyName("wind_speed_of_gust")]
-    public double WindGust { get; set; }
-
-    [JsonPropertyName("wind_from_direction")]
-    public double WindDirection { get; set; }
+    [JsonPropertyName("wind_speed")]          public double WindSpeed { get; set; }
+    [JsonPropertyName("wind_speed_of_gust")]  public double WindGust { get; set; }
+    [JsonPropertyName("wind_from_direction")] public double WindDirection { get; set; }
 }
