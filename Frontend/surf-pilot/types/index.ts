@@ -6,10 +6,18 @@ export interface UserProfile {
   experience: ExperienceLevel;
 }
 
+export interface WeatherSource {
+  source: string;
+  windSpeedKnots: number;
+  windGustKnots: number;
+  windDirection: number;
+}
+
 export interface WeatherData {
   windSpeedKnots: number;
   windGustKnots: number;
   windDirection: number;
+  sources?: WeatherSource[];
 }
 
 export interface GearRecommendation {

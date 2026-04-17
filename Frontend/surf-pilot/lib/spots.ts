@@ -1,6 +1,8 @@
 import { Spot } from '@/types';
 
 export const PRESET_SPOTS: Spot[] = [
+  { name: 'Ναυτικός Όμιλος Χίου',         lat:  38.370, lon:   26.136 },
+  { name: 'Αγία Δύναμη, Χίος',            lat:  38.192, lon:   25.973 },
   { name: 'Tarifa, Spain',                lat:  36.014, lon:   -5.601 },
   { name: 'Maui, Hawaii',                 lat:  20.794, lon: -156.331 },
   { name: 'Dahab, Egypt',                 lat:  28.500, lon:   34.517 },

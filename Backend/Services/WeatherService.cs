@@ -5,16 +5,16 @@ namespace Backend.Services;
 
 public class WeatherService(HttpClient httpClient)
 {
-    public async Task<WeatherData> GetWeatherAsync(double lat, double lon)
+    public async Task<WeatherReading> GetWeatherAsync(double lat, double lon)
     {
         var url = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=kn";
-
         var response = await httpClient.GetFromJsonAsync<OpenMeteoResponse>(url);
 
         if (response?.Current == null)
             throw new InvalidOperationException("Failed to fetch weather data from Open-Meteo");
 
-        return new WeatherData(
+        return new WeatherReading(
+            "Open-Meteo",
             response.Current.WindSpeed10m,
             response.Current.WindGusts10m,
             response.Current.WindDirection10m

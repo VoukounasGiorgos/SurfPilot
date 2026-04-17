@@ -7,6 +7,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddHttpClient<WeatherService>();
+builder.Services.AddHttpClient<MetNorwayService>(c =>
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("SurfPilot/1.0"));
 builder.Services.AddSingleton<RecommendationService>();
 
 builder.Services.AddCors(options =>
