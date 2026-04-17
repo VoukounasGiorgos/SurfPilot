@@ -1,64 +1,88 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { UserProfile, WeatherData, GearRecommendation, Spot } from '@/types';
+import { loadProfile, clearProfile } from '@/lib/storage';
+import { fetchWeather, fetchRecommendation } from '@/lib/api';
+import SpotSelector from '@/components/SpotSelector';
+import WeatherCard from '@/components/WeatherCard';
+import RecommendationCard from '@/components/RecommendationCard';
 
 export default function Home() {
+  const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [currentSpot, setCurrentSpot] = useState<Spot | null>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [recommendation, setRecommendation] = useState<GearRecommendation | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const p = loadProfile();
+    if (!p) {
+      router.push('/onboarding');
+    } else {
+      setProfile(p);
+    }
+  }, [router]);
+
+  const handleSpotSelect = async (spot: Spot) => {
+    if (!profile) return;
+    setCurrentSpot(spot);
+    setWeather(null);
+    setRecommendation(null);
+    setError(null);
+    setLoading(true);
+    try {
+      const w = await fetchWeather(spot.lat, spot.lon);
+      setWeather(w);
+      const r = await fetchRecommendation(profile, w);
+      setRecommendation(r);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!profile) return null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-slate-100">
+      <header className="bg-white border-b border-slate-100 px-4 py-4">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-cyan-700">SurfPilot</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-500">
+              {profile.weightKg} kg · {profile.experience}
+            </span>
+            <button
+              onClick={() => { clearProfile(); router.push('/onboarding'); }}
+              className="text-xs text-slate-400 hover:text-slate-600 underline"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Reset
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      <main className="max-w-lg mx-auto p-4 space-y-4">
+        <SpotSelector onSelect={handleSpotSelect} loading={loading} />
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {weather && currentSpot && (
+          <WeatherCard weather={weather} spotName={currentSpot.name} />
+        )}
+
+        {recommendation && (
+          <RecommendationCard recommendation={recommendation} />
+        )}
       </main>
     </div>
   );

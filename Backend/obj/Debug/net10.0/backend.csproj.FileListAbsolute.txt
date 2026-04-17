@@ -31,3 +31,4 @@ C:\Users\giorg\Desktop\SurfPilot\SurfPilot\backend\obj\Debug\net10.0\refint\back
 C:\Users\giorg\Desktop\SurfPilot\SurfPilot\backend\obj\Debug\net10.0\backend.pdb
 C:\Users\giorg\Desktop\SurfPilot\SurfPilot\backend\obj\Debug\net10.0\backend.genruntimeconfig.cache
 C:\Users\giorg\Desktop\SurfPilot\SurfPilot\backend\obj\Debug\net10.0\ref\backend.dll
+C:\Users\giorg\Desktop\SurfPilot\SurfPilot\backend\obj\Debug\net10.0\backend.sourcelink.json
