@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserProfile, WeatherData, GearRecommendation, Spot } from '@/types';
 import { loadProfile, clearProfile } from '@/lib/storage';
-import { fetchWeather, fetchRecommendation } from '@/lib/api';
+import { fetchWeather, fetchRecommendation, fetchAiRecommendation } from '@/lib/api';
 import SpotSelector from '@/components/SpotSelector';
 import WeatherCard from '@/components/WeatherCard';
 import RecommendationCard from '@/components/RecommendationCard';
+import AiRecommendationCard from '@/components/AiRecommendationCard';
 
 export default function Home() {
   const router = useRouter();
@@ -15,8 +16,11 @@ export default function Home() {
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [recommendation, setRecommendation] = useState<GearRecommendation | null>(null);
+  const [aiRecommendation, setAiRecommendation] = useState<GearRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   useEffect(() => {
     const p = loadProfile();
@@ -32,7 +36,9 @@ export default function Home() {
     setCurrentSpot(spot);
     setWeather(null);
     setRecommendation(null);
+    setAiRecommendation(null);
     setError(null);
+    setAiError(null);
     setLoading(true);
     try {
       const w = await fetchWeather(spot.lat, spot.lon);
@@ -43,6 +49,21 @@ export default function Home() {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAiRecommendation = async () => {
+    if (!profile || !weather || !currentSpot) return;
+    setAiRecommendation(null);
+    setAiError(null);
+    setAiLoading(true);
+    try {
+      const r = await fetchAiRecommendation(profile, weather, currentSpot.name);
+      setAiRecommendation(r);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'AI recommendation failed');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -82,6 +103,35 @@ export default function Home() {
 
         {recommendation && (
           <RecommendationCard recommendation={recommendation} />
+        )}
+
+        {recommendation && !aiRecommendation && (
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={handleAiRecommendation}
+              disabled={aiLoading}
+              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold rounded-xl px-6 py-3 transition-colors"
+            >
+              {aiLoading ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Asking AI…
+                </>
+              ) : (
+                <>
+                  <span>✦</span>
+                  Ask AI (Gemini)
+                </>
+              )}
+            </button>
+            {aiError && (
+              <p className="text-xs text-red-500">{aiError}</p>
+            )}
+          </div>
+        )}
+
+        {aiRecommendation && (
+          <AiRecommendationCard recommendation={aiRecommendation} />
         )}
       </main>
     </div>

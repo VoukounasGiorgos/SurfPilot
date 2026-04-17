@@ -8,5 +8,6 @@ public record GearRecommendation(
     double SailMax,
     PowerRating PowerRating,
     double BoardVolumeLiters,
-    int FinLengthCm
+    int FinLengthCm,
+    string? Reasoning = null
 );

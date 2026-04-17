@@ -10,6 +10,7 @@ builder.Services.AddHttpClient<WeatherService>();
 builder.Services.AddHttpClient<MetNorwayService>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd("SurfPilot/1.0"));
 builder.Services.AddSingleton<RecommendationService>();
+builder.Services.AddHttpClient<LlmRecommendationService>();
 
 builder.Services.AddCors(options =>
 {

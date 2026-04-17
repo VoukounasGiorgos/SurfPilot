@@ -23,3 +23,20 @@ export async function fetchRecommendation(
   if (!res.ok) throw new Error('Failed to calculate recommendation');
   return res.json();
 }
+
+export async function fetchAiRecommendation(
+  profile: UserProfile,
+  weather: WeatherData,
+  spotName: string
+): Promise<GearRecommendation> {
+  const res = await fetch(`${API_BASE}/api/recommendation/ai`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userProfile: profile, weatherData: weather, spotName }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(err.error || 'AI recommendation failed');
+  }
+  return res.json();
+}

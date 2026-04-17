@@ -27,6 +27,7 @@ export interface GearRecommendation {
   powerRating: PowerRating;
   boardVolumeLiters: number;
   finLengthCm: number;
+  reasoning?: string;
 }
 
 export interface Spot {
